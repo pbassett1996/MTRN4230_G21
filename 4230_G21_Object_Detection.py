@@ -11,16 +11,22 @@ from geometry_msgs.msg import *
 import Tkinter as tk
 import cv2, cv_bridge, random, time
 import numpy as np
+import math
 
 
 colour = "all"
 shape = "all"
+depth_array = "none"
+kinect_height = 1.5 #meters above the ground
 
 class ObjectDetection:
     def __init__(self):
         self.bridge = cv_bridge.CvBridge()
+        self.depth_sub = rospy.Subscriber('camera/depth/image_raw', 
+                                  Image, self.depth_callback)
         self.image_sub = rospy.Subscriber('camera/color/image_raw', 
                                   Image, self.image_callback)
+        
     #Shape Detection
     def ColourDetection(self):
         if(colour == "all"):
@@ -45,6 +51,7 @@ class ObjectDetection:
         return hue_min, hue_max
 
     def ShapeDetection(self,  img):
+        global depth_array, kinect_height
         imgCopy = img.copy()
         imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         hue_min, hue_max = self.ColourDetection()
@@ -64,26 +71,44 @@ class ObjectDetection:
             approx = cv2.approxPolyDP(cnt,  0.02*peri,  True)
             objCor = len(approx)
             x,  y,  w,  h = cv2.boundingRect(approx)
-            objectType = ""
 
-            if objCor == 3: objectType = "Triangle"
-            elif objCor == 4:
-                aspRatio = w/float(h)
-                if aspRatio > 0.9 and aspRatio < 1.1: objectType = "Cube"
-                else: objectType = "Rect Box"
-            elif objCor >= 8:
-                objectType = "Cylinder"
-            cv2.rectangle(img,  (x, y),  (x+w,  y+h),  (0,  255,  0), 2)
-            if(shape == objectType or shape == "all"):
-                cv2.putText(imgCopy,  objectType,  (x+(w/2)+10,  y+(h/2)-10),  cv2.FONT_HERSHEY_COMPLEX,  0.3,  (255, 255, 255),  1)
-            
-            cv2.namedWindow("window")
-            cv2.imshow("window", imgCopy)
-            cv2.waitKey(5)
+            #Source: pyimagesearh.com/2016/02/01/opencv-center-of-contour/
+            M = cv2.moments(cnt)
+            if M["m00"] > 0:
+                cX = int(M["m10"]/M["m00"])
+                cY = int(M["m01"]/M["m00"])
+                objectType = ""
+                
+                if objCor == 3: objectType = "Triangle"
+                elif objCor == 4:
+                    aspRatio = w/float(h)
+                    if aspRatio > 0.9 and aspRatio < 1.1: objectType = "Cube"
+                    else: objectType = "Rect Box"
+                elif objCor >= 8:
+                    objectType = "Cylinder"
+                cv2.rectangle(img,  (x, y),  (x+w,  y+h),  (0,  255,  0), 2)
+                if(shape == objectType or shape == "all"):
+                    length = (depth_array[cY,cX].astype(float))
+                    obj_height = round((1.5-length)*100 ,1)
+
+                    text1 = "Shape = " + objectType
+                    text2 = "Height = " + str(obj_height) + " cm"
+                    cv2.putText(imgCopy,  text1,  (x+(w/2)+20,  y+(h/2)-10),  cv2.FONT_HERSHEY_COMPLEX,  0.3,  (255, 255, 255),  1)
+                    cv2.putText(imgCopy,  text2,  (x+(w/2)+20,  y+(h/2)),  cv2.FONT_HERSHEY_COMPLEX,  0.3,  (255, 255, 255),  1)
+        
+        cv2.namedWindow("window")
+        cv2.imshow("window", imgCopy)
+        cv2.waitKey(5)
         
     def image_callback(self, msg):
         image = self.bridge.imgmsg_to_cv2(msg,desired_encoding='bgr8')
         self.ShapeDetection(image)
+
+    def depth_callback(self, msg):
+        global depth_array
+        depth_img = self.bridge.imgmsg_to_cv2(msg,desired_encoding='passthrough')
+        depth_array = np.array(depth_img, dtype=np.float32)
+        
 
 def setVars():
     global colour
@@ -92,9 +117,10 @@ def setVars():
     shape = shp.get()
 
 
-def delete_objects(number, delete):
-    item_name = "kinect1"
-    d(item_name)
+def delete_objects(number, delete, flag):
+    if flag == True:
+        item_name = "kinect1"
+        d(item_name)
     for num in xrange(0, number):
         item_name = "Object_{0}".format(num)
         delete(item_name)
@@ -114,11 +140,17 @@ def spawn_objects(number, spawn, obj1, obj2, obj3, obj4, orientation):
         elif(num > 4 and num <=6):
             spawn(item_name, obj4, "", item_pose, "world")
 
-def close_windows(num, s):
-    delete_objects(num, s)
+def close_windows(num, d):
+    delete_objects(num, d, True)
     cv2.destroyAllWindows()
     root.destroy()
     quit()
+
+def reset_obj(num, s, d , obj1, obj2, obj3, obj4, orientation):
+    delete_objects(num, d, False)
+    time.sleep(0.1)
+    spawn_objects(num, s,obj1, obj2, obj3, obj4, orientation)
+
 
 #Initialisation
 rospy.init_node('objectDetection')
@@ -148,8 +180,9 @@ with open("/home/javad/model_editor_models/kinect_ros/model.sdf", "r") as f:
     kinect = f.read()
 
 #Spawn the kinect into the world
-item_pose = Pose(Point(x=0, y=0, z = 1.5), orient_kinect)
+item_pose = Pose(Point(x=0, y=0, z = kinect_height), orient_kinect)
 s_kinect("kinect1", kinect, "",item_pose, "world")
+time.sleep(1)
 
 #Spawn the objects for detection
 spawn_objects(7, s_obj, blue_box, red_box, green_cube, yellow_cylinder, orient_obj)
@@ -173,11 +206,15 @@ shp.set("all")
 drop2 = tk.OptionMenu(root, shp, "Rect Box", "Cube", "Cylinder", "all").place(relx = 0.8, rely = 0.4, anchor = 'ne')
 
 #Create buttons
-goButton = tk.Button(root, text = "Go!", command = setVars).place(relx = 0.3, rely = 1.0, anchor = 'sw')
-deleteButton = tk.Button(root, text = "Exit", command = lambda: close_windows(7, d)).place(relx = 0.7, rely = 1.0, anchor = 'se')
+goButton = tk.Button(root, text = "Go!", command = setVars).place(relx = 0.1, rely = 1.0, anchor = 'sw')
+deleteButton = tk.Button(root, text = "Exit", command = lambda: close_windows(7, d)).place(relx = 0.9, rely = 1.0, anchor = 'se')
+resetButton = tk.Button(root, text = "Reset", command = lambda: reset_obj(7, s_obj, d, blue_box, red_box, green_cube, yellow_cylinder, orient_obj))
+resetButton.place(relx = 0.5, rely = 1.0, anchor = 's')
 
+time.sleep(1)
 #Begin detecting objects
 follower = ObjectDetection()
+time.sleep(1)
 
 root.mainloop()
 rospy.spin()
