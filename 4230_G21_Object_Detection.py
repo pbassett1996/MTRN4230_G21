@@ -174,10 +174,10 @@ def spawn_objects(number, spawn, obj1, obj2, obj3, obj4, orientation):
         if(num == 1):
             spawn(item_name, obj1, "", item_pose, "world")
         elif(num == 2):
-            spawn(item_name, obj2, "", item_pose, "world")
-        elif(num > 2 and num <=4):
             spawn(item_name, obj3, "", item_pose, "world")
-        elif(num > 4 and num <=6):
+        #elif(num > 2 and num <=4):
+            #spawn(item_name, obj3, "", item_pose, "world")
+        elif(num == 3):
             spawn(item_name, obj4, "", item_pose, "world")
         time.sleep(0.1)
 
@@ -222,7 +222,7 @@ with open("/home/javad/model_editor_models/unit_box/green_cube.urdf", "r") as f:
     green_cube = f.read()
 with open("/home/javad/model_editor_models/unit_box/yellow_cylinder.urdf", "r") as f:
     yellow_cylinder = f.read()
-with open("/home/javad/model_editor_models/kinect_ros/model.sdf", "r") as f:
+with open("/home/javad/model_editor_models/kinect_ros/kinect.sdf", "r") as f:
     kinect = f.read()
 
 #Spawn the kinect into the world
