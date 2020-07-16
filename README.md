@@ -22,9 +22,11 @@ The forward/inverse kinematic module of the program. Currently calculates the fo
 #### 4230_G21_GUI.py
 Graphical user interface to operate the pick-and-place task. This allows the objects shape and colour to be defined, as well as the number of objects to be picked up. The primary library utilised for this operation is Tkinter.
 
+#### 4230_G21_MotionPlanner.py and 4230_G21_TrajectoryPlanner.py
+These files control the actuation of the robot arm such that it can achieve point-to-point control using the python library MoveIt. This is the base foundation for what will eventually become a trajectory plan. Significant contributions can be accredited to Huang Zhao (https://github.com/lihuang3/ur5_ROS-Gazebo).
+
 #### URDF and SDF files
 A variety of different URDF files are included that allow an array of differnet objects to be substantiated in the Gazebo simulation. These can be attributed to Huang Zhao (https://github.com/lihuang3/ur5_ROS-Gazebo) as the files were obtained from his work on the ur5_ROS_gazebo simulation and then edited to suit the application of this project. The Kinect SDF was also included as some minor modifications were also made to its content to allow it to statically spawn in Gazebo simulation.
-
 
 ## Built With
 
