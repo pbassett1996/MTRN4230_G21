@@ -16,8 +16,12 @@ All programs are to be run in the virtual environment provided by the course. Th
 #### 4230_G21_Object_Detection.py
 The computer vision module of the program. Uses the data received from the ROS kinect sensor to identify different objects based on colour and shape. It returns the coordinates of the objects in the global reference frame for the pick-and-place operation.
 
+#### 4230_G21_Kinematics.mat
+The forward/inverse kinematic module of the program. Currently calculates the forward kinematics of the UR5e robot arm using the DH convention.
+
 #### URDF and SDF files
 A variety of different URDF files are included that allow an array of differnet objects to be substantiated in the Gazebo simulation. These can be attributed to Huang Zhao (https://github.com/lihuang3/ur5_ROS-Gazebo) as the files were obtained from his work on the ur5_ROS_gazebo simulation and then edited to suit the application of this project. The Kinect SDF was also included as some minor modifications were also made to its content to allow it to statically spawn in Gazebo simulation.
+
 
 ## Built With
 
@@ -26,6 +30,7 @@ A variety of different URDF files are included that allow an array of differnet 
 * [python](https://www.python.org/) - Programming language used
 * [OpenCV](https://opencv.org/) - Computer Vision library used
 * [MoveIt](https://moveit.ros.org/) - Motion planning framework used
+* [MATLAB](https://www.mathworks.com/products/matlab.html) - Desktop environment used
 
 ## Contributing
 
