@@ -19,6 +19,9 @@ The computer vision module of the program. Uses the data received from the ROS k
 #### 4230_G21_Kinematics.mat
 The forward/inverse kinematic module of the program. Currently calculates the forward kinematics of the UR5e robot arm using the DH convention.
 
+#### 4230_G21_GUI.py
+Graphical user interface to operate the pick-and-place task. This allows the objects shape and colour to be defined, as well as the number of objects to be picked up. The primary library utilised for this operation is Tkinter.
+
 #### URDF and SDF files
 A variety of different URDF files are included that allow an array of differnet objects to be substantiated in the Gazebo simulation. These can be attributed to Huang Zhao (https://github.com/lihuang3/ur5_ROS-Gazebo) as the files were obtained from his work on the ur5_ROS_gazebo simulation and then edited to suit the application of this project. The Kinect SDF was also included as some minor modifications were also made to its content to allow it to statically spawn in Gazebo simulation.
 
