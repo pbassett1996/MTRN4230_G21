@@ -11,6 +11,17 @@ All programs are to be run in the virtual environment provided by the course. Th
 - MoveIt
 - Tkinter
 
+### Break down of structure
+
+- src
+    - Code associated with the pick and place solution.
+    - trajectory
+        - Code for trajectory planning
+- models
+    - Models of the kinect and items to be picked and placed.
+- scripts
+    - Test and calculation scripts
+
 ### Break down of programs
 
 #### 4230_G21_Object_Detection.py
