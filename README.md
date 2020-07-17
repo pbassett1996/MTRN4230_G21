@@ -16,7 +16,7 @@ All programs are to be run in the virtual environment provided by the course. Th
 #### 4230_G21_Object_Detection.py
 The computer vision module of the program. Uses the data received from the ROS kinect sensor to identify different objects based on colour and shape. It returns the coordinates of the objects in the global reference frame for the pick-and-place operation.
 
-#### 4230_G21_Kinematics.mat
+#### 4230_G21_Kinematics.m
 The forward/inverse kinematic module of the program. Currently calculates the forward kinematics of the UR5e robot arm using the DH convention.
 
 #### 4230_G21_GUI.py
