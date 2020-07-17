@@ -13,13 +13,13 @@ All programs are to be run in the virtual environment provided by the course. Th
 
 ### Break down of structure
 
-- src
+- src/
     - Code associated with the pick and place solution.
-    - trajectory
+    - trajectory/
         - Code for trajectory planning
-- models
+- models/
     - Models of the kinect and items to be picked and placed.
-- scripts
+- scripts/
     - Test and calculation scripts
 
 ### Break down of programs
