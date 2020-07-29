@@ -30,11 +30,13 @@ pick_objs = False
 
 #Colour and shape identifier
 def setVars(OD):
-    global colour, shape, pick_objs
+    global colour, shape, pick_objs, object_num
     colour = col.get()
     shape = shp.get()
+    print "Picking up", str(colour), "objects of", str(shape), "shape/s."
     OD.UserInput(colour, shape)
     time.sleep(2)
+    object_num = 0
     pick_objs = True
 
 #Delete objects in Gazebo simulation
@@ -51,6 +53,7 @@ def delete_objects(number, delete, flag):
 #Spawn objects in Gazebo simulation
 #Source: http://wiki.ros.org/rospy/Overview/Services
 def spawn_objects(number, spawn, obj1, obj2, obj3, obj4, orientation):
+    print("Spawning objects into robot's field of view")
     global pos_array_x
     global pos_array_y
     for num in xrange(0,number+1):
@@ -60,18 +63,19 @@ def spawn_objects(number, spawn, obj1, obj2, obj3, obj4, orientation):
         pos_array_x[num] = pos_x
         item_name = "Object_{0}".format(num)
         item_pose = Pose(Point(x=pos_x, y = pos_y, z = 0), orientation)
-        if(num == 1):
+        if(num >= 0 and num <= 1):
             spawn(item_name, obj1, "", item_pose, "world")
         elif(num == 2):
             spawn(item_name, obj3, "", item_pose, "world")
         elif(num > 2 and num <=4):
             spawn(item_name, obj3, "", item_pose, "world")
-        elif(num == 5):
+        elif(num >= 5):
             spawn(item_name, obj4, "", item_pose, "world")
         time.sleep(0.1)
 
 #Close program
 def close_windows(num, d):
+    print("Closing down")
     delete_objects(num, d, False)
     cv2.destroyAllWindows()
     root.destroy()
@@ -79,6 +83,7 @@ def close_windows(num, d):
 
 #Used to reset the objects in the kinects field of view
 def reset_obj(num, s, d , obj1, obj2, obj3, obj4, orientation, OD):
+    print("Resetting objects")
     global object_num, pick_objs
     OD.reset()
     pick_objs = False
@@ -152,28 +157,54 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print "Shutting down."
 
-    #Create tkinter window for GUI
     root = tk.Tk()
-    root.title('MTRN4230 - Urm Group Asignment')
-    root.geometry("250x100")
+    root.title("MTRN4230 G21")
+    root.geometry("500x300")
+    root.configure(background='white smoke')
 
-    #Create drop down list for colours
-    col_lbl = tk.Label(root, text = "Enter colour input").place(relx = 0.1, rely = 0.1, anchor = 'nw')
     col = tk.StringVar()
     col.set("all")
-    drop = tk.OptionMenu(root, col, "red", "blue", "green", "yellow", "all").place(relx = 0.8, rely = 0.05, anchor = 'ne')
-
-    #Create drop down list for shapes
-    shp_lbl = tk.Label(root, text="Enter shape input").place(relx = 0.1, rely = 0.45, anchor = 'nw')
     shp = tk.StringVar()
     shp.set("all")
-    drop2 = tk.OptionMenu(root, shp, "Rect Box", "Cube", "Cylinder", "all").place(relx = 0.8, rely = 0.4, anchor = 'ne')
 
-    #Create buttons
-    goButton = tk.Button(root, text = "Go!", command = lambda: setVars(OD)).place(relx = 0.1, rely = 1.0, anchor = 'sw')
-    deleteButton = tk.Button(root, text = "Exit", command = lambda: close_windows(obj_num, d)).place(relx = 0.9, rely = 1.0, anchor = 'se')
-    resetButton = tk.Button(root, text = "Reset", command = lambda: reset_obj(obj_num, s_obj, d, blue_box, red_box, green_cube, yellow_cylinder, orient_obj, OD))
-    resetButton.place(relx = 0.5, rely = 1.0, anchor = 's')
+    title = tk.Text(root)
+    title.insert(tk.INSERT,"MTRN4230 G21")
+
+    titLable = tk.Label(root, text="MTRN4230 G21",bg='white smoke')
+    titLable.place(x=150, y=10)
+    titLable.config(font=("Space", 20))
+
+    #colour drop down menu
+    colorDrop = tk.OptionMenu(root, col,'red', 'blue', 'green', 'yellow', 'all')
+    colorDrop.config(fg='white', bg='slate gray', width=10, borderwidth=5)
+    colorDrop["menu"].config(fg='white', bg='slate gray')
+    colorDrop.place(x=200,y=100)
+
+    colLable = tk.Label(root, text="Colour")
+    colLable.place(x=235, y=80)
+
+    #shape drop down menu
+    shapeDrop = tk.OptionMenu(root, shp,'Cube', 'Rect Box', 'Cylinder', 'all')
+    shapeDrop.config(fg='white', bg='slate gray', width=10, borderwidth=5)
+    shapeDrop["menu"].config(fg='white', bg='slate gray')
+    shapeDrop.place(x=350,y=100)
+
+    shapeLable = tk.Label(root, text="Shape")
+    shapeLable.place(x=390, y=80)
+
+    #start button
+    startButton = tk.Button(root, text="START", command = lambda: setVars(OD), width=10, height=2, fg="white", bg="green4",borderwidth=5)
+    startButton.place(x=50,y=75)
+    #resetbutton
+    resetButton = tk.Button(root, text="RESET", command = lambda: reset_obj(obj_num, s_obj, d, blue_box, red_box, green_cube, yellow_cylinder, orient_obj, OD), width=10,height=2, fg="white", bg="orange",borderwidth=5)
+    resetButton.place(x=50,y=150)
+    #stop button
+    stopButton = tk.Button(root, text="STOP", command = lambda: close_windows(obj_num, d), width=10,height=2, fg="white", bg="red3",borderwidth=5)
+    stopButton.place(x=50,y=225)
+    
+    slider
+    quantity = tk.Scale(root, from_=0, to=10, length=250, tickinterval=1, orient=tk.HORIZONTAL, width=20)
+    quantity.place(x=200,y=200)
 
     time.sleep(0.1)
     count = 0
