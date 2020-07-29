@@ -4,15 +4,7 @@
 #Group: G21
 #Date: 15/07/2020
 
-import Tkinter as tk
-import numpy as np
-import math
-import os
-
-# ROS
 import rospy, tf
-
-# Messages
 import message_filters
 import sensor_msgs.point_cloud2 as pc2
 from sensor_msgs.msg import Image
@@ -20,44 +12,38 @@ from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import CameraInfo
 from gazebo_msgs.srv import *
 from geometry_msgs.msg import *
-
-# OpenCv
 from cv_bridge import CvBridgeError
+import Tkinter as tk
 import cv2, cv_bridge, random, time
-
-model_foler = "../../models/"
-
+import numpy as np
+import math
 
 colour = "all"
 shape = "all"
-kinect_height = 1.5 #meters above the ground
+
 
 class ObjectDetection:
-
-    def __init__(self):
+    def __init__(self, Colour, Shape):
+        global colour, shape
+        #rospy.init_node("ObjectDetection", anonymous=False)
         self.bridge = cv_bridge.CvBridge() 
         self.img = None
         self.depth_array = None
         self.point_cloud = None
         self.R_matrix = None
+        colour = Colour
+        shape = Shape
+        self.store_vals = False
+        self.positions = [None]*10
         #Create subscribers to depth sensor messages
-        image_sub = rospy.Subscriber(
-            'camera/color/image_raw', 
-            Image, self.image_callback
-        )
-        depth_sub = rospy.Subscriber(
-            'camera/depth/image_raw', 
-            Image, self.depth_callback
-        )
-        points_sub = rospy.Subscriber(
-            'camera/depth/points', 
-            PointCloud2, self.point_callback
-        )
-        info_sub = rospy.Subscriber(
-            'camera/depth/camera_info', 
-            CameraInfo, self.info_callback
-        )
-
+        image_sub = rospy.Subscriber('camera/color/image_raw', 
+                                  Image, self.image_callback)
+        depth_sub = rospy.Subscriber('camera/depth/image_raw', 
+                                  Image, self.depth_callback)
+        points_sub = rospy.Subscriber('camera/depth/points', 
+                                  PointCloud2, self.point_callback)
+        info_sub = rospy.Subscriber('camera/depth/camera_info', 
+                                  CameraInfo, self.info_callback)
     #Identify colours based on hue values
     def ColourDetection(self):
         global colour
@@ -86,6 +72,8 @@ class ObjectDetection:
     def ShapeDetection(self):
         imgCopy = self.img.copy()
         
+        #[height, width] = self.img.shape[1,2]
+        
         #Convert to HSV
         imgHSV = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV)
         hue_min, hue_max = self.ColourDetection()
@@ -101,12 +89,8 @@ class ObjectDetection:
         
         #Identify the contours of objects in the image
         #Source: https://www.youtube.com/watch?v=WQeoO7MI0Bs&t=2842s
-        contours,  hierarchy = cv2.findContours(
-            imgDil,
-            cv2.RETR_EXTERNAL,
-            cv2.CHAIN_APPROX_NONE
-        )[-2:]
-
+        i = 0
+        contours,  hierarchy = cv2.findContours(imgDil,  cv2.RETR_EXTERNAL,  cv2.CHAIN_APPROX_NONE)[-2:]
         for cnt in contours:
             cv2.drawContours(imgDil,  cnt,  -1,  (255, 0, 0), 3)
             peri = cv2.arcLength(cnt,  True)
@@ -136,42 +120,28 @@ class ObjectDetection:
                     obj_height = round((1.5-length)*100 ,1)
                     
                     #Calculate global X Y coordinates
-                    #Source: http://wiki.ros.org/kinect_node
-                    uvw = np.dot(self.R_matrix , self.point_cloud[cX*cY].transpose())
-                    x_inertial = round(uvw[0]/uvw[2])*0.001
-                    y_inertial= round(uvw[1]/uvw[2])*0.001
-                    
+
+                    x_min = float(self.point_cloud[:,0].min())
+                    x_max = float(self.point_cloud[:,0].max())
+                    y_min = float(self.point_cloud[:,1].min())
+                    y_max = float(self.point_cloud[:,1].max())
+
+                    cX = float(M["m10"]/M["m00"])
+                    cY = float(M["m01"]/M["m00"])
+
+                    y_inertial = -round(x_min +  (x_max*2)*(cX/640), 4)
+                    x_inertial = -round(y_min +  (y_max*2)*(cY/480), 4)+0.5
+                    if(self.store_vals == True):
+                        self.positions[i] = [x_inertial, y_inertial]
+                        i = i+1
+
                     #Add text to object for testing purposes
                     text1 = "Shape = " + objectType
                     text2 = "Height = " + str(obj_height) + " cm"
                     text3 = "Pos = [" + str(x_inertial) + ", " + str(y_inertial) + "] m"
-                    cv2.putText(
-                        imgCopy,
-                        text1,
-                        (x+(w/2)+20, y+(h/2)-10),
-                        cv2.FONT_HERSHEY_COMPLEX,
-                        0.3,
-                        (255, 255, 255),
-                        1
-                    )
-                    cv2.putText(
-                        imgCopy,
-                        text2,
-                        (x+(w/2)+20, y+(h/2)),
-                        cv2.FONT_HERSHEY_COMPLEX,
-                        0.3,
-                        (255, 255, 255),
-                        1
-                    )
-                    cv2.putText(
-                        imgCopy,
-                        text3,
-                        (x+(w/2)+20, y+(h/2)+10),
-                        cv2.FONT_HERSHEY_COMPLEX,
-                        0.3,
-                        (255, 255, 255),
-                        1
-                    )
+                    cv2.putText(imgCopy,  text1,  (x+(w/2)+20,  y+(h/2)-10),  cv2.FONT_HERSHEY_COMPLEX,  0.3,  (255, 255, 255),  1)
+                    cv2.putText(imgCopy,  text2,  (x+(w/2)+20,  y+(h/2)),  cv2.FONT_HERSHEY_COMPLEX,  0.3,  (255, 255, 255),  1)
+                    cv2.putText(imgCopy,  text3,  (x+(w/2)+20,  y+(h/2)+10),  cv2.FONT_HERSHEY_COMPLEX,  0.3,  (255, 255, 255),  1)
 
         cv2.imshow("window", imgCopy)
         cv2.waitKey(10)
@@ -183,11 +153,7 @@ class ObjectDetection:
         except CvBridgeError, e:
             print e
 
-        if(
-            self.depth_array is not None and
-            self.point_cloud is not None and
-            self.R_matrix is not None
-        ):
+        if(self.depth_array is not None and self.point_cloud is not None and self.R_matrix is not None):
             self.ShapeDetection()
             
     #Callback for the purpose of reading depth data
@@ -200,191 +166,46 @@ class ObjectDetection:
     
     #Callback for the purpose of reading point cloud data
     def point_callback(self, points):
-        point_list = []
-        #point_list = list(pc2.read_points(points, skip_nans = True, field_names = ("x", "y", "z")))
-        for data in pc2.read_points(points, skip_nans=True):
-            point_list.append([data[0], data[1], data[2], data[3]])
-        self.point_cloud = np.array(point_list)
+        point_cloud = np.array(list(pc2.read_points(points, skip_nans = True, field_names = ("x", "y", "z"))))
+        self.point_cloud = np.array(point_cloud)
+        
         
     #Callback for the purpose of reading the project matrix
     def info_callback(self, info):
         self.R_matrix = np.array(info.P).reshape(3,4)
+    
+    #Return the global coordinates of the objects
+    def get_coordinates(self):
+        return self.positions
 
-#Colour and shape identifier
-def setVars():
-    global colour
-    global shape 
-    colour = col.get()
-    shape = shp.get()
+    #Objects being reset
+    def reset(self):
+        self.store_vals = False
+        self.positions = [None]*10
 
-#Delete objects in Gazebo simulation
-#Source: http://wiki.ros.org/rospy/Overview/Services
-def delete_objects(number, delete, flag):
-    if flag == True:
-        item_name = "kinect1"
-        d(item_name)
-    for num in xrange(0, number+1):
-        item_name = "Object_{0}".format(num)
-        delete(item_name)
-        time.sleep(0.1)
-        
-#Spawn objects in Gazebo simulation
-#Source: http://wiki.ros.org/rospy/Overview/Services
-def spawn_objects(number, spawn, obj1, obj2, obj3, obj4, orientation):
-    for num in xrange(0,number+1):
-        pos_x = random.uniform(-0.5,0.5)
-        pos_y = random.uniform(-0.5,0.5)
-        item_name = "Object_{0}".format(num)
-        item_pose = Pose(Point(x=pos_x, y = pos_y, z = 0), orientation)
-        if(num == 1):
-            spawn(item_name, obj1, "", item_pose, "world")
-        elif(num == 2):
-            spawn(item_name, obj3, "", item_pose, "world")
-        #elif(num > 2 and num <=4):
-            #spawn(item_name, obj3, "", item_pose, "world")
-        elif(num == 3):
-            spawn(item_name, obj4, "", item_pose, "world")
-        time.sleep(0.1)
+    #Change of colour of shape input
+    def UserInput(self, Colour, Shape):
+        global colour, shape
+        colour = Colour
+        shape = Shape
+        self.store_vals = True
 
-def close_windows(num, d):
-    delete_objects(num, d, True)
-    cv2.destroyAllWindows()
-    root.destroy()
-    quit()
-
-#Used to reset the objects in the kinects field of view
-def reset_obj(num, s, d , obj1, obj2, obj3, obj4, orientation):
-    delete_objects(num, d, False)
-    time.sleep(0.1)
-    spawn_objects(num, s,obj1, obj2, obj3, obj4, orientation)
+    def __del__(self):
+        print("Closing Object Detection")
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
-    #Block until service is available
-    rospy.wait_for_service("gazebo/delete_model")
-    rospy.wait_for_service("gazebo/spawn_sdf_model")
-    rospy.wait_for_service("gazebo/spawn_urdf_model")
-    
-    #Quaternion orientation of kinect and objects
-    orient_kinect = Quaternion(*tf.transformations.quaternion_from_euler(0,1.57,0))
-    orient_obj = Quaternion(*tf.transformations.quaternion_from_euler(0,0,0))
-    
-    #Create objects for spawn and delete roservice
-    s_kinect = rospy.ServiceProxy("gazebo/spawn_sdf_model", SpawnModel)
-    s_obj = rospy.ServiceProxy("gazebo/spawn_urdf_model", SpawnModel)
-    d = rospy.ServiceProxy("gazebo/delete_model", DeleteModel)
-    
-    #Open URDF and SDF model files
-    with open(os.path.join(model_foler, "blue_box.urdf"), "r") as f:
-        blue_box = f.read()
-    with open(os.path.join(model_foler, "red_box.urdf", "r") as f:
-        red_box = f.read()
-    with open(os.path.join(model_foler, "green_cube.urdf", "r") as f:
-        green_cube = f.read()
-    with open(os.path.join(model_foler, "yellow_cylinder.urdf", "r") as f:
-        yellow_cylinder = f.read()
-    with open(os.path.join(model_foler, "kinect.sdf", "r") as f:
-        kinect = f.read()
-    
-    #Spawn the kinect into the world
-    item_pose = Pose(Point(x=0, y=0, z = kinect_height), orient_kinect)
-    s_kinect("kinect1", kinect, "",item_pose, "world")
-    time.sleep(0.1)
-    
-    #Spawn the objects for detection
-    obj_num = 3
-    spawn_objects(
-        obj_num,
-        s_obj,
-        blue_box,
-        red_box,
-        green_cube,
-        yellow_cylinder,
-        orient_obj
-    )
-    
-    #Create tkinter window for GUI
-    root = tk.Tk()
-    root.title('MTRN4230 - Urm Group Asignment')
-    root.geometry("250x100")
-    
-    #Create drop down list for colours
-    col_lbl = tk.Label(
-        root,
-        text = "Enter colour input"
-    ).place(relx = 0.1, rely = 0.1, anchor = 'nw')
+    try:
+        ObjectDetection(colour, shape)
+    except KeyboardInterrupt:
+        print "Shutting down."
 
-    col = tk.StringVar()
-    col.set("all")
-    
-    drop = tk.OptionMenu(
-        root,
-        col,
-        "red",
-        "blue",
-        "green",
-        "yellow",
-        "all"
-    ).place(relx = 0.8, rely = 0.05, anchor = 'ne')
-    
-    #Create drop down list for shapes
-    shp_lbl = tk.Label(
-        root,
-        text="Enter shape input"
-    ).place(relx = 0.1, rely = 0.45, anchor = 'nw')
+#Begin detecting objects
+#obj = ObjectDetection("all", "all")
+#rospy.init_node('ObjectDetection')
+#rospy.spin()
 
-    shp = tk.StringVar()
-    shp.set("all")
 
-    drop2 = tk.OptionMenu(
-        root,
-        shp,
-        "Rect Box",
-        "Cube",
-        "Cylinder",
-        "all"
-    ).place(relx = 0.8, rely = 0.4, anchor = 'ne')
-    
-    #Create buttons
-    goButton = tk.Button(
-        root,
-        text = "Go!",
-        command = setVars
-    ).place(relx = 0.1, rely = 1.0, anchor = 'sw')
 
-    deleteButton = tk.Button(
-        root,
-        text = "Exit",
-        command = lambda: close_windows(obj_num, d)
-    ).place(relx = 0.9, rely = 1.0, anchor = 'se')
-
-    resetButton = tk.Button(
-        root,
-        text = "Reset",
-        command = lambda: reset_obj(
-            obj_num,
-            s_obj,
-            d,
-            blue_box,
-            red_box,
-            green_cube,
-            yellow_cylinder,
-            orient_obj
-        )
-    )
-    resetButton.place(relx = 0.5, rely = 1.0, anchor = 's')
-    
-    #Small sleep to allow time for the spawning completion - helps with reading kinect data
-    time.sleep(2)
-    
-    #Begin detecting objects
-    obj = ObjectDetection()
-    rospy.init_node('objectDetection')
-    
-    
-    root.mainloop()
-    rospy.spin()
-    
-    
-    
-    # END ALL
+# END ALL
