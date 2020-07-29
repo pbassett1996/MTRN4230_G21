@@ -27,51 +27,25 @@ import moveit_commander
 from geometry_msgs.msg import Pose
 from copy import deepcopy
 from std_msgs.msg import Header
+from mtrn4230_t2_cv.msg import Pick
 
 from trajectory_msgs.msg import JointTrajectory
 
 from trajectory_msgs.msg import JointTrajectoryPoint
 
+
 class MoveItCartesianPath:
-    def __init__(self):
-        rospy.init_node("moveit_cartesian_path", anonymous=False)
-
-        rospy.loginfo("Starting node moveit_cartesian_path")
-
-        rospy.on_shutdown(self.cleanup)
-
-        # Initialize the move_group API
-        moveit_commander.roscpp_initialize(sys.argv)
-
-        # Initialize the move group for the ur5_arm
-        self.arm = moveit_commander.MoveGroupCommander('manipulator')
-
-        # Get the name of the end-effector link
-        end_effector_link = self.arm.get_end_effector_link()
-
-        # Set the reference frame for pose targets
-        reference_frame = "/base_link"
-
-        # Set the ur5_arm reference frame accordingly
-        self.arm.set_pose_reference_frame(reference_frame)
-
-
-        # Allow replanning to increase the odds of a solution
-        self.arm.allow_replanning(True)
-
-        # Allow some leeway in position (meters) and orientation (radians)
-        self.arm.set_goal_position_tolerance(0.01)
-        self.arm.set_goal_orientation_tolerance(0.1)
-
+    def callback(self,data):
+        rospy.loginfo("received the following point " + str(data))
         # Get the current pose so we can add it as a waypoint
-        start_pose = self.arm.get_current_pose(end_effector_link).pose
+        start_pose = self.arm.get_current_pose(self.end_effector_link).pose
         print(start_pose.position)
 	#x: 0.106525108368
 	#y: -0.427095181299
 	#z: 0.400467161414
-	start_pose.position.x = 0.4
-	start_pose.position.y = -0.2
-	start_pose.position.z = 0
+	#start_pose.position.x = 0.4
+	#start_pose.position.y = -0.2
+	#start_pose.position.z = 0
 
 
         # Initialize the waypoints list
@@ -84,31 +58,10 @@ class MoveItCartesianPath:
         wpose = deepcopy(start_pose)
 
         # Set the next waypoint to the right 0.5 meters
-        wpose.position.x = 0.3
-        wpose.position.y = -0.2
-        wpose.position.z = 0.4
+        wpose.position.x = data.x
+        wpose.position.y = data.y
+        wpose.position.z = 0.2
         waypoints.append(deepcopy(wpose))
-
-                # Set the next waypoint to the right 0.5 meters
-        wpose.position.x = 0.3
-        wpose.position.y = -0.2
-        wpose.position.z = 0.4
-        waypoints.append(deepcopy(wpose))
-
-
-                # Set the next waypoint to the right 0.5 meters
-        wpose.position.x = -0.5
-        wpose.position.y = -0.2
-        wpose.position.z = 0.4
-        waypoints.append(deepcopy(wpose))
-
-                # Set the next waypoint to the right 0.5 meters
-        wpose.position.x = -0.5
-        wpose.position.y = -0.2
-        wpose.position.z = 0
-        waypoints.append(deepcopy(wpose))
-
-
 
 
 
@@ -156,14 +109,14 @@ class MoveItCartesianPath:
             rate = rospy.Rate(20)
             cnt = 0
             pts = JointTrajectoryPoint()
-            while not rospy.is_shutdown():
+            while not rospy.is_shutdown() and cnt < num_pts -1:
 
                 cnt += 1
                 traj.header.stamp = rospy.Time.now()
 
                 #        pts.positions = [0.0, -2.33, 1.57, 0.0, 0.0, 0.0]
 
-                pts.positions = waypoints[cnt % num_pts]
+                pts.positions = waypoints[cnt]
 
                 pts.time_from_start = rospy.Duration(0.001*cnt)
 
@@ -180,6 +133,43 @@ class MoveItCartesianPath:
         else:
             rospy.loginfo("Path planning failed with only " + str(fraction) + " success after " + str(maxtries) + " attempts.")
 
+
+
+    def __init__(self):
+        rospy.init_node("moveit_cartesian_path", anonymous=False)
+
+        rospy.loginfo("Starting node moveit_cartesian_path")
+
+        rospy.on_shutdown(self.cleanup)
+
+        #subscribe to goal updates
+        rospy.Subscriber("custom_chatter", Pick, self.callback)
+
+        # Initialize the move_group API
+        moveit_commander.roscpp_initialize(sys.argv)
+
+        # Initialize the move group for the ur5_arm
+        self.arm = moveit_commander.MoveGroupCommander('manipulator')
+
+        # Get the name of the end-effector link
+        self.end_effector_link = self.arm.get_end_effector_link()
+
+        # Set the reference frame for pose targets
+        self.reference_frame = "/base_link"
+
+        # Set the ur5_arm reference frame accordingly
+        self.arm.set_pose_reference_frame(self.reference_frame)
+
+
+        # Allow replanning to increase the odds of a solution
+        self.arm.allow_replanning(True)
+
+        # Allow some leeway in position (meters) and orientation (radians)
+        self.arm.set_goal_position_tolerance(0.01)
+        self.arm.set_goal_orientation_tolerance(0.1)
+        rospy.spin()
+
+
     def cleanup(self):
         rospy.loginfo("Stopping the robot")
 
@@ -190,6 +180,7 @@ class MoveItCartesianPath:
         rospy.loginfo("Shutting down Moveit!")
         moveit_commander.roscpp_shutdown()
         moveit_commander.os._exit(0)
+    
 
 if __name__ == "__main__":
     try:
