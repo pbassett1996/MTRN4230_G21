@@ -32,6 +32,11 @@ from mtrn4230_t2_cv.msg import Pick
 from trajectory_msgs.msg import JointTrajectory
 
 from trajectory_msgs.msg import JointTrajectoryPoint
+bucket_x = -0.3
+bucket_y = 0.3
+travel_height = 0.3
+pick_height = 0.0
+
 
 
 class MoveItCartesianPath:
@@ -57,10 +62,43 @@ class MoveItCartesianPath:
 
         wpose = deepcopy(start_pose)
 
-        # Set the next waypoint to the right 0.5 meters
+
+
+
+        # Set the next waypoint to location of the pick object
         wpose.position.x = data.x
         wpose.position.y = data.y
-        wpose.position.z = 0.2
+        wpose.position.z = travel_height
+        waypoints.append(deepcopy(wpose))
+
+        # lower to pick the object
+        wpose.position.x = data.x
+        wpose.position.y = data.y
+        wpose.position.z = pick_height
+        waypoints.append(deepcopy(wpose))
+
+        # raise
+        wpose.position.x = data.x
+        wpose.position.y = data.y
+        wpose.position.z = travel_height
+        waypoints.append(deepcopy(wpose))
+
+        #move to the bin
+        wpose.position.x = bucket_x
+        wpose.position.y = bucket_y
+        wpose.position.z = travel_height
+        waypoints.append(deepcopy(wpose))
+
+        # place in the bin
+        wpose.position.x = bucket_x
+        wpose.position.y = bucket_y
+        wpose.position.z = pick_height
+        waypoints.append(deepcopy(wpose))
+
+        #retract from the bin
+        wpose.position.x = bucket_x
+        wpose.position.y = bucket_y
+        wpose.position.z = travel_height
         waypoints.append(deepcopy(wpose))
 
 

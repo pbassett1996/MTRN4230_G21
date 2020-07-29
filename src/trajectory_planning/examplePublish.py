@@ -11,8 +11,8 @@ def talker():
 
 
     while not rospy.is_shutdown():
-        msg.x = random.random()*0.75 + 0.05
-        msg.y = random.random()*1.5 - 0.75
+        msg.x = random.random()*0.5 + 0.1
+        msg.y = random.random()*0.5 + 0.1
         rospy.loginfo(msg)
         pub.publish(msg)
         r.sleep()
