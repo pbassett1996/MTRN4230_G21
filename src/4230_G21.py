@@ -3,22 +3,34 @@
 #Group: G21
 #Date: 29/07/2020
 
-import rospy, sys, tf
-import moveit_commander
-import message_filters
-from gazebo_msgs.srv import *
-from geometry_msgs.msg import *
-from cv_bridge import CvBridgeError
-from Motion_Planner import MoveItCartesianPath
-from Object_Detection import ObjectDetection
-import Tkinter as tk
-import cv2, cv_bridge, random, time
+# General Libraries
 import numpy as np
-import math
+import math, random, time, os
 
+# ROS
+import rospy, sys, tf
+from geometry_msgs.msg import *
+import message_filters
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import CameraInfo
+
+# OpenCV
+import cv2, cv_bridge
+from cv_bridge import CvBridgeError
+
+# Robot Arm
+import moveit_commander
+from gazebo_msgs.srv import *
+
+# Tkinter, GUI
+import Tkinter as tk
+
+# Project imports
+from motion_planner import MoveItCartesianPath
+from object_detection import ObjectDetection
+
+models_folder = "../models"
 
 colour = "all"
 shape = "all"
@@ -129,15 +141,15 @@ if __name__ == "__main__":
 
 
     #Open URDF and SDF model files
-    with open("/home/javad/model_editor_models/unit_box/blue_box.urdf", "r") as f:
+    with open(os.path.join(models_folder, "blue_box.urdf", "r") as f:
         blue_box = f.read()
-    with open("/home/javad/model_editor_models/unit_box/red_box.urdf", "r") as f:
+    with open(os.path.join(models_folder, "red_box.urdf", "r") as f:
         red_box = f.read()
-    with open("/home/javad/model_editor_models/unit_box/green_cube.urdf", "r") as f:
+    with open(os.path.join(models_folder, "green_cube.urdf", "r") as f:
         green_cube = f.read()
-    with open("/home/javad/model_editor_models/unit_box/yellow_cylinder.urdf", "r") as f:
+    with open(os.path.join(models_folder, "yellow_cylinder.urdf", "r") as f:
         yellow_cylinder = f.read()
-    with open("/home/javad/model_editor_models/kinect_ros/kinect.sdf", "r") as f:
+    with open(os.path.join(models_folder, "kinect.sdf", "r") as f:
         kinect = f.read()
 
     #Spawn the kinect into the world
