@@ -7,6 +7,7 @@
 import Tkinter as tk
 import numpy as np
 import math
+import os
 
 # ROS
 import rospy, tf
@@ -24,6 +25,7 @@ from geometry_msgs.msg import *
 from cv_bridge import CvBridgeError
 import cv2, cv_bridge, random, time
 
+model_foler = "../../models/"
 
 
 colour = "all"
@@ -273,15 +275,15 @@ if __name__ == "__main__":
     d = rospy.ServiceProxy("gazebo/delete_model", DeleteModel)
     
     #Open URDF and SDF model files
-    with open("../models/blue_box.urdf", "r") as f:
+    with open(os.path.join(model_foler, "blue_box.urdf"), "r") as f:
         blue_box = f.read()
-    with open("../models/red_box.urdf", "r") as f:
+    with open(os.path.join(model_foler, "red_box.urdf", "r") as f:
         red_box = f.read()
-    with open("../models/green_cube.urdf", "r") as f:
+    with open(os.path.join(model_foler, "green_cube.urdf", "r") as f:
         green_cube = f.read()
-    with open("../models/yellow_cylinder.urdf", "r") as f:
+    with open(os.path.join(model_foler, "yellow_cylinder.urdf", "r") as f:
         yellow_cylinder = f.read()
-    with open("../models/kinect.sdf", "r") as f:
+    with open(os.path.join(model_foler, "kinect.sdf", "r") as f:
         kinect = f.read()
     
     #Spawn the kinect into the world
