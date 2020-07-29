@@ -27,8 +27,8 @@ from gazebo_msgs.srv import *
 import Tkinter as tk
 
 # Project imports
-from motion_planner import MoveItCartesianPath
-from object_detection import ObjectDetection
+from trajectory_planning.Motion_Planner import MoveItCartesianPath
+from computer_vision.object_detection import ObjectDetection
 
 models_folder = "../models"
 
@@ -141,15 +141,15 @@ if __name__ == "__main__":
 
 
     #Open URDF and SDF model files
-    with open(os.path.join(models_folder, "blue_box.urdf", "r") as f:
+    with open(os.path.join(models_folder, "blue_box.urdf"), "r") as f:
         blue_box = f.read()
-    with open(os.path.join(models_folder, "red_box.urdf", "r") as f:
+    with open(os.path.join(models_folder, "red_box.urdf"), "r") as f:
         red_box = f.read()
-    with open(os.path.join(models_folder, "green_cube.urdf", "r") as f:
+    with open(os.path.join(models_folder, "green_cube.urdf"), "r") as f:
         green_cube = f.read()
-    with open(os.path.join(models_folder, "yellow_cylinder.urdf", "r") as f:
+    with open(os.path.join(models_folder, "yellow_cylinder.urdf"), "r") as f:
         yellow_cylinder = f.read()
-    with open(os.path.join(models_folder, "kinect.sdf", "r") as f:
+    with open(os.path.join(models_folder, "kinect.sdf"), "r") as f:
         kinect = f.read()
 
     #Spawn the kinect into the world
