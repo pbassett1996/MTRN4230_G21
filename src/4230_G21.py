@@ -214,7 +214,7 @@ if __name__ == "__main__":
     stopButton = tk.Button(root, text="STOP", command = lambda: close_windows(obj_num, d), width=10,height=2, fg="white", bg="red3",borderwidth=5)
     stopButton.place(x=50,y=225)
     
-    slider
+    # slider
     quantity = tk.Scale(root, from_=0, to=10, length=250, tickinterval=1, orient=tk.HORIZONTAL, width=20)
     quantity.place(x=200,y=200)
 
