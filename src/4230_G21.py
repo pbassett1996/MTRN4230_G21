@@ -3,22 +3,36 @@
 #Group: G21
 #Date: 29/07/2020
 
-import rospy, sys, tf
-import moveit_commander
-import message_filters
-from gazebo_msgs.srv import *
-from geometry_msgs.msg import *
-from cv_bridge import CvBridgeError
-from Motion_Planner import MoveItCartesianPath
-from Object_Detection import ObjectDetection
-import Tkinter as tk
-import cv2, cv_bridge, random, time
+# General Libraries
 import numpy as np
-import math
+import math, random, time, os
 
+# ROS
+import rospy, sys, tf
+from geometry_msgs.msg import *
+import message_filters
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import CameraInfo
+
+#custom pick msg created for the project
+from mtrn4230_t2_cv.msg import Pick
+
+# OpenCV
+import cv2, cv_bridge
+from cv_bridge import CvBridgeError
+
+# Robot Arm
+from gazebo_msgs.srv import *
+
+# Tkinter, GUI
+import Tkinter as tk
+
+# Project imports
+from trajectory_planning.Motion_Planner import MoveItCartesianPath
+from computer_vision.object_detection import ObjectDetection
+
+models_folder = "../models"
 
 colour = "all"
 shape = "all"
@@ -93,23 +107,33 @@ def reset_obj(num, s, d , obj1, obj2, obj3, obj4, orientation, OD):
     object_num = 0
 
 #Recrusive function that controls the motion planner using the object detection output   
-def run(OD,MP, count, root, flag):
+def run(OD,pub, count, root, flag):
     global object_num, pick_objs
     count += 0.1
     
     #If the arm is not moving and we have pressed "go"
-    if(MP.isMoving() == False and pick_objs == True):
+    #TODO: wait for robot to finish task before retasking
+    if(pick_objs == True):
         pos = OD.get_coordinates() #Get object coordinates
         if(pos[object_num] != None):
-            MP.pickup(pos[object_num][0], pos[object_num][1], 0.1)
+            #send this to the pick place node
+            #MP.pickup(pos[object_num][0], pos[object_num][1], 0.1)
+            #
+            msg = Pick()
+            msg.x = pos[object_num][0]
+            msg.y = pos[object_num][1]
+            rospy.loginfo(msg)
+            pub.publish(msg)
+
             object_num += 1
 
     if count < 100:
-        root.after(100, run, OD, MP, count, root, flag)
+        root.after(100, run, OD,pub, count, root, flag)
 
 
 if __name__ == "__main__":
     rospy.init_node('Main')
+    pub = rospy.Publisher('pick_point_publisher', Pick,queue_size=100)
 
     #Block until service is available
     rospy.wait_for_service("gazebo/delete_model")
@@ -129,15 +153,15 @@ if __name__ == "__main__":
 
 
     #Open URDF and SDF model files
-    with open("/home/javad/model_editor_models/unit_box/blue_box.urdf", "r") as f:
+    with open(os.path.join(models_folder, "blue_box.urdf"), "r") as f:
         blue_box = f.read()
-    with open("/home/javad/model_editor_models/unit_box/red_box.urdf", "r") as f:
+    with open(os.path.join(models_folder, "red_box.urdf"), "r") as f:
         red_box = f.read()
-    with open("/home/javad/model_editor_models/unit_box/green_cube.urdf", "r") as f:
+    with open(os.path.join(models_folder, "green_cube.urdf"), "r") as f:
         green_cube = f.read()
-    with open("/home/javad/model_editor_models/unit_box/yellow_cylinder.urdf", "r") as f:
+    with open(os.path.join(models_folder, "yellow_cylinder.urdf"), "r") as f:
         yellow_cylinder = f.read()
-    with open("/home/javad/model_editor_models/kinect_ros/kinect.sdf", "r") as f:
+    with open(os.path.join(models_folder, "kinect.sdf"), "r") as f:
         kinect = f.read()
 
     #Spawn the kinect into the world
@@ -153,7 +177,6 @@ if __name__ == "__main__":
     
     try:
         OD = ObjectDetection(colour, shape)
-        MP = MoveItCartesianPath()
     except KeyboardInterrupt:
         print "Shutting down."
 
@@ -202,14 +225,14 @@ if __name__ == "__main__":
     stopButton = tk.Button(root, text="STOP", command = lambda: close_windows(obj_num, d), width=10,height=2, fg="white", bg="red3",borderwidth=5)
     stopButton.place(x=50,y=225)
     
-    slider
+    # slider
     quantity = tk.Scale(root, from_=0, to=10, length=250, tickinterval=1, orient=tk.HORIZONTAL, width=20)
     quantity.place(x=200,y=200)
 
     time.sleep(0.1)
     count = 0
     flag = True
-    run(OD,MP, count, root,flag)
+    run(OD,pub, count, root,flag)
 
     root.mainloop()
     #rospy.spin()

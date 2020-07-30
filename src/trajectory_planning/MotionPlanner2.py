@@ -79,8 +79,30 @@ class MoveItCartesianPath:
         wpose.position.x = -0.2
         wpose.position.y = -0.2
         wpose.position.z = 0.3
-
         waypoints.append(deepcopy(wpose))
+
+        # Set the next waypoint to the right 0.5 meters
+        wpose.position.x = -0.2
+        wpose.position.y = -0.2
+        wpose.position.z = 0.3
+        waypoints.append(deepcopy(wpose))
+
+        # Set the next waypoint to the right 0.5 meters
+        wpose.position.x = 0.2
+        wpose.position.y = 0.4
+        wpose.position.z = 0.4
+        waypoints.append(deepcopy(wpose))
+
+        # Set the next waypoint to the right 0.5 meters
+        wpose.position.x = 0.3
+        wpose.position.y = -0.2
+        wpose.position.z = 0.3
+        waypoints.append(deepcopy(wpose))
+
+
+
+
+
         if np.sqrt((wpose.position.x-start_pose.position.x)**2+(wpose.position.x-start_pose.position.x)**2 \
             +(wpose.position.x-start_pose.position.x)**2)<0.1:
             rospy.loginfo("Warnig: target position overlaps with the initial position!")

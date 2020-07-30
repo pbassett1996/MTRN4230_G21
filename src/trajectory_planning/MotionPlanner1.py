@@ -69,7 +69,7 @@ class MoveItCartesianPath:
 	#x: 0.106525108368
 	#y: -0.427095181299
 	#z: 0.400467161414
-	start_pose.position.x = 0.7
+	start_pose.position.x = 0.4
 	start_pose.position.y = -0.2
 	start_pose.position.z = 0
 
@@ -84,13 +84,13 @@ class MoveItCartesianPath:
         wpose = deepcopy(start_pose)
 
         # Set the next waypoint to the right 0.5 meters
-        wpose.position.x = 0.7
+        wpose.position.x = 0.3
         wpose.position.y = -0.2
         wpose.position.z = 0.4
         waypoints.append(deepcopy(wpose))
 
                 # Set the next waypoint to the right 0.5 meters
-        wpose.position.x = 0.7
+        wpose.position.x = 0.3
         wpose.position.y = -0.2
         wpose.position.z = 0.4
         waypoints.append(deepcopy(wpose))
@@ -108,22 +108,7 @@ class MoveItCartesianPath:
         wpose.position.z = 0
         waypoints.append(deepcopy(wpose))
 
-                # Set the next waypoint to the right 0.5 meters
-        wpose.position.x = -0.5
-        wpose.position.y = -0.2
-        wpose.position.z = 0.4
-        waypoints.append(deepcopy(wpose))
 
-                # Set the next waypoint to the right 0.5 meters
-        wpose.position.x = 0.7
-        wpose.position.y = -0.2
-        wpose.position.z = 0.4
-        waypoints.append(deepcopy(wpose))
-
-        wpose.position.x = 0.7
-        wpose.position.y = -0.2
-        wpose.position.z = 0.0
-        waypoints.append(deepcopy(wpose))
 
 
 

@@ -11,6 +11,36 @@ All programs are to be run in the virtual environment provided by the course. Th
 - MoveIt
 - Tkinter
 
+### Setup
+#### Computer Vision Setup
+In one terminal type:
+```bash
+cd ~/simulation_ws/
+catkin_make
+source devel/setup.bash
+export SVGA_VGPU10=0
+roslaunch ur5_t2_4230 ur5_world.launch
+```
+After running the command make sure to orient the kinect facing the ground plane
+
+In another terminal type:
+```bash
+cd ~/simulation_ws/src/mtrn4230_g21/src
+python object_detection.py
+```
+
+
+### Break down of structure
+
+- src/
+    - Code associated with the pick and place solution.
+    - trajectory/
+        - Code for trajectory planning
+- models/
+    - Models of the kinect and items to be picked and placed.
+- scripts/
+    - Test and calculation scripts
+
 ### Break down of programs
 
 #### 4230_G21_Object_Detection.py
