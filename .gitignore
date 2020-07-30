@@ -1,0 +1,5 @@
+# Test editor files
+.*.swp
+
+# Python files
+*.pyc

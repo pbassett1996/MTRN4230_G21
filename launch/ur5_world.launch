@@ -29,6 +29,7 @@
 	<!-- push robot_description to factory and spawn robot in gazebo -->
 	  <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot -z 0.1 -y 0" respawn="false" output="screen" />
 
+
 	  <include file="$(find ur_gazebo)/launch/controller_utils.launch"/>
 
 	  <rosparam file="$(find ur_gazebo)/controller/arm_controller_ur5.yaml" command="load"/>
@@ -37,7 +38,7 @@
 	  <!-- Remap follow_joint_trajectory -->
 	  <remap if="$(arg sim)" from="/follow_joint_trajectory" to="/arm_controller/follow_joint_trajectory"/>
 
-          <!-- Launch moveit -->
+  <!-- Launch moveit -->
   <include file="$(find ur5_moveit_config)/launch/move_group.launch">
     <arg name="limited" default="$(arg limited)"/>
     <arg name="debug" default="$(arg debug)" />
