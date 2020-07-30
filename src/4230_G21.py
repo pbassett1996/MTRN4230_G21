@@ -15,12 +15,14 @@ from sensor_msgs.msg import Image
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import CameraInfo
 
+#custom pick msg created for the project
+from mtrn4230_t2_cv.msg import Pick
+
 # OpenCV
 import cv2, cv_bridge
 from cv_bridge import CvBridgeError
 
 # Robot Arm
-import moveit_commander
 from gazebo_msgs.srv import *
 
 # Tkinter, GUI
@@ -105,23 +107,33 @@ def reset_obj(num, s, d , obj1, obj2, obj3, obj4, orientation, OD):
     object_num = 0
 
 #Recrusive function that controls the motion planner using the object detection output   
-def run(OD,MP, count, root, flag):
+def run(OD,pub, count, root, flag):
     global object_num, pick_objs
     count += 0.1
     
     #If the arm is not moving and we have pressed "go"
-    if(MP.isMoving() == False and pick_objs == True):
+    #TODO: wait for robot to finish task before retasking
+    if(pick_objs == True):
         pos = OD.get_coordinates() #Get object coordinates
         if(pos[object_num] != None):
-            MP.pickup(pos[object_num][0], pos[object_num][1], 0.1)
+            #send this to the pick place node
+            #MP.pickup(pos[object_num][0], pos[object_num][1], 0.1)
+            #
+            msg = Pick()
+            msg.x = pos[object_num][0]
+            msg.y = pos[object_num][1]
+            rospy.loginfo(msg)
+            pub.publish(msg)
+
             object_num += 1
 
     if count < 100:
-        root.after(100, run, OD, MP, count, root, flag)
+        root.after(100, run, OD,pub, count, root, flag)
 
 
 if __name__ == "__main__":
     rospy.init_node('Main')
+    pub = rospy.Publisher('pick_point_publisher', Pick,queue_size=100)
 
     #Block until service is available
     rospy.wait_for_service("gazebo/delete_model")
@@ -165,7 +177,6 @@ if __name__ == "__main__":
     
     try:
         OD = ObjectDetection(colour, shape)
-        MP = MoveItCartesianPath()
     except KeyboardInterrupt:
         print "Shutting down."
 
@@ -221,7 +232,7 @@ if __name__ == "__main__":
     time.sleep(0.1)
     count = 0
     flag = True
-    run(OD,MP, count, root,flag)
+    run(OD,pub, count, root,flag)
 
     root.mainloop()
     #rospy.spin()

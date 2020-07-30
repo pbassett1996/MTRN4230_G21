@@ -33,7 +33,7 @@ from trajectory_msgs.msg import JointTrajectory
 
 from trajectory_msgs.msg import JointTrajectoryPoint
 bucket_x = -0.3
-bucket_y = 0.3
+bucket_y = 0.5
 travel_height = 0.3
 pick_height = 0.0
 
@@ -181,7 +181,7 @@ class MoveItCartesianPath:
         rospy.on_shutdown(self.cleanup)
 
         #subscribe to goal updates
-        rospy.Subscriber("custom_chatter", Pick, self.callback)
+        rospy.Subscriber("pick_point_publisher", Pick, self.callback)
 
         # Initialize the move_group API
         moveit_commander.roscpp_initialize(sys.argv)

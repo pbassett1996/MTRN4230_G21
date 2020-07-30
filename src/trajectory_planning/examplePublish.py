@@ -4,7 +4,7 @@ from mtrn4230_t2_cv.msg import Pick
 import random
 
 def talker():
-    pub = rospy.Publisher('custom_chatter', Pick)
+    pub = rospy.Publisher('pick_point_publisher', Pick)
     rospy.init_node('custom_talker', anonymous=True)
     r = rospy.Rate(0.1) #1hz
     msg = Pick()

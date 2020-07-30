@@ -83,7 +83,7 @@
     <state world_name='default'>
       <sim_time>0 0</sim_time>
       <real_time>0 0</real_time>
-      <wall_time>1595906572 910233119</wall_time>
+      <wall_time>1596081634 31779621</wall_time>
       <iterations>0</iterations>
       <model name='ground_plane'>
         <pose frame=''>0 0 0 0 -0 0</pose>
@@ -111,7 +111,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>-1.05532 4.33939 3.73271 0 0.507643 -1.5918</pose>
+        <pose frame=''>-1.36014 5.77259 5.01661 0 0.507643 -1.5918</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
