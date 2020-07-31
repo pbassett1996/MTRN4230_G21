@@ -2,6 +2,7 @@
 #Project: MTRN4230 Group Project
 #Group: G21
 #Date: 29/07/2020
+#About: The following function coordinates the integration of the object detection and trajectory planner objects as well as the Graphical User Interface.
 
 # General Libraries
 import numpy as np
