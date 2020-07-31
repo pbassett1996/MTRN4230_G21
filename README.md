@@ -43,6 +43,9 @@ python object_detection.py
 
 ### Break down of programs
 
+#### Main_4230_G21.py
+Main file for integration of Object Detection and Trajectory planner modules. Also now includes the GUI for user input.
+
 #### ObjectDetection_4230_G21.py
 The computer vision module of the program. Uses the data received from the ROS kinect sensor to identify different objects based on colour and shape. It returns the coordinates of the objects in the global reference frame for the pick-and-place operation.
 
