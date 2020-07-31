@@ -43,16 +43,16 @@ python object_detection.py
 
 ### Break down of programs
 
-#### 4230_G21_Object_Detection.py
+#### ObjectDetection_4230_G21.py
 The computer vision module of the program. Uses the data received from the ROS kinect sensor to identify different objects based on colour and shape. It returns the coordinates of the objects in the global reference frame for the pick-and-place operation.
 
-#### 4230_G21_Kinematics.m
+#### Kinematics_4230_G21_.m
 The forward/inverse kinematic module of the program. Currently calculates the forward kinematics of the UR5e robot arm using the DH convention.
 
 #### 4230_G21_GUI.py
 Graphical user interface to operate the pick-and-place task. This allows the objects shape and colour to be defined, as well as the number of objects to be picked up. The primary library utilised for this operation is Tkinter.
 
-#### 4230_G21_MotionPlanner.py and 4230_G21_TrajectoryPlanner.py
+#### 4230_G21_MotionPlanner.py and TrajectoryPlanner_4230_G21_.py
 These files control the actuation of the robot arm such that it can achieve point-to-point control using the python library MoveIt. This is the base foundation for what will eventually become a trajectory plan. Significant contributions can be accredited to Huang Zhao (https://github.com/lihuang3/ur5_ROS-Gazebo).
 
 #### URDF and SDF files
