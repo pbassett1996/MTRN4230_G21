@@ -30,8 +30,8 @@ from gazebo_msgs.srv import *
 import Tkinter as tk
 
 # Project imports
-from trajectory_planning.Motion_Planner import MoveItCartesianPath
-from computer_vision.object_detection import ObjectDetection
+from trajectory_planning.TrajectoryPlanner_4230_G21 import MoveItCartesianPath
+from computer_vision.ObjectDetection_4230_G21 import ObjectDetection
 
 models_folder = "../models"
 
