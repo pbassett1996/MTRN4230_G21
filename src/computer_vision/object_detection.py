@@ -3,6 +3,8 @@
 #Project: Object Detection Module for MTRN4230 Group Project
 #Group: G21
 #Date: 15/07/2020
+#About: The following class controls the object detection of the group 21's project. It uses the information from the kinect sensor to differentiate objects 
+#based on colour and shape and then return their global coordinates for use in the trajectory planner class
 
 import rospy, tf
 import message_filters
