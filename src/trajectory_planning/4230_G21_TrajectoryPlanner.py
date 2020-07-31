@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+#Subject: MTRN4230
+#Group: 21
+#Date: 30/07/2020
+#About: The following program receives coordinates from the "Pick" node and executues a pick and place waypoint using MoveIt.
 
 """
     moveit_cartesian_path.py - Version 0.1 2016-07-28
